@@ -2,7 +2,7 @@ import pygame
 import json
 import random
 import time
-
+import os
 
 with open('config.json', 'r') as f:
     config = json.load(f)
@@ -33,10 +33,12 @@ def genereaza_mancare(sarpe, obstacole):
         if [x, y] not in sarpe and [x, y] not in obstacole:
             return [x, y]
 
-def afiseaza_scor(scor):
-    font = pygame.font.SysFont("arial", 25)
-    valoare = font.render(f"Scor: {scor}", True, ALB)
-    ecran.blit(valoare, [10, 10])
+def afiseaza_scoruri(scor_curent, record):
+    font = pygame.font.SysFont("arial", 20)
+    text_scor = font.render(f"Scor: {scor_curent}", True, ALB)
+    text_record = font.render(f"Record: {record}", True, (255, 215, 0)) # Culoare aurie
+    ecran.blit(text_scor, [10, 10])
+    ecran.blit(text_record, [10, 35])
 
 def ecran_final(scor_final):
     font_mare = pygame.font.SysFont("arial", 60, bold=True)
@@ -57,7 +59,7 @@ def ecran_final(scor_final):
     pygame.display.update()
 
 def reseteaza_joc():
-    global sarpe, mancare, directie, schimba_in, scor, coliziune
+    global sarpe, mancare, directie, schimba_in, scor, coliziune,high_score
     
     sarpe = [list(pos) for pos in config['snake']['start_pos']]
     mancare = genereaza_mancare(sarpe, obstacole)
@@ -65,8 +67,21 @@ def reseteaza_joc():
     schimba_in = 'DREAPTA'
     scor = 0
     coliziune = False 
+    high_score = incarc_high_score()
     time.sleep(0.5)
 
+def incarc_high_score():
+    if os.path.exists("highscore.txt"):
+        with open("highscore.txt", "r") as f:
+            try:
+                return int(f.read())
+            except:
+                return 0
+    return 0
+
+def salveaza_high_score(nou_record):
+    with open("highscore.txt", "w") as f:
+        f.write(str(nou_record))
 
 pygame.init()
 ecran = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -107,6 +122,7 @@ while running:
 
    
     if coliziune:
+        salveaza_high_score(high_score)
         ecran_final(scor)
         asteptare = True
         while asteptare:
@@ -126,6 +142,8 @@ while running:
     sarpe.insert(0, cap_actual)
     if cap_actual == mancare:
         scor += 1
+        if scor > high_score:
+            high_score = scor
         mancare = genereaza_mancare(sarpe, obstacole)
     else:
         sarpe.pop()
@@ -147,7 +165,7 @@ while running:
 
     pygame.draw.rect(ecran, ALB, [mancare[0], mancare[1], BLOCK_SIZE, BLOCK_SIZE])
     
-    afiseaza_scor(scor)
+    afiseaza_scoruri(scor,high_score)
     pygame.display.update()
     ceas.tick(config['snake']['speed'])
 
