@@ -47,15 +47,18 @@ def ecran_final(scor_final):
     t_game_over = font_mare.render("GAME OVER", True, ROSU)
     t_scor = font_mic.render(f"Scorul tău: {scor_final}", True, ALB)
     t_restart = font_mic.render("R - Restart | Q - Ieșire", True, ALB)
+    t_record = font_mic.render(f"Record: {high_score}", True, ALB)
 
     r_game_over = t_game_over.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
     r_scor = t_scor.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 20))
     r_restart = t_restart.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 80))
+    r_record = t_record.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 140))
 
     ecran.fill(NEGRU)
     ecran.blit(t_game_over, r_game_over)
     ecran.blit(t_scor, r_scor)
     ecran.blit(t_restart, r_restart)
+    ecran.blit(t_record,r_record)
     pygame.display.update()
 
 def reseteaza_joc():
