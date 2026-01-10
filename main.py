@@ -11,7 +11,7 @@ BLOCK_SIZE = config['board']['block_size']
 WIDTH = config['board']['width']
 HEIGHT = config['board']['height']
 
-
+PORTOCALIU = (255, 165, 0)
 ALB = (255, 255, 255)
 NEGRU = (0, 0, 0)
 ROSU = (213, 50, 80)
@@ -36,7 +36,7 @@ def genereaza_mancare(sarpe, obstacole):
 def afiseaza_scoruri(scor_curent, record):
     font = pygame.font.SysFont("arial", 20)
     text_scor = font.render(f"Scor: {scor_curent}", True, ALB)
-    text_record = font.render(f"Record: {record}", True, (255, 215, 0)) # Culoare aurie
+    text_record = font.render(f"Record: {record}", True, (255, 215, 0)) 
     ecran.blit(text_scor, [10, 10])
     ecran.blit(text_record, [10, 35])
 
@@ -44,21 +44,33 @@ def ecran_final(scor_final):
     font_mare = pygame.font.SysFont("arial", 60, bold=True)
     font_mic = pygame.font.SysFont("arial", 30)
     
+    nume_dificultate = "-"
+    if viteza_joc == 10: nume_dificultate = "Incepator"
+    elif viteza_joc == 20: nume_dificultate = "Mediu"
+    elif viteza_joc == 30: nume_dificultate = "Avansat"
+
+
     t_game_over = font_mare.render("GAME OVER", True, ROSU)
     t_scor = font_mic.render(f"Scorul tău: {scor_final}", True, ALB)
     t_restart = font_mic.render("R - Restart | Q - Ieșire", True, ALB)
     t_record = font_mic.render(f"Record: {high_score}", True, ALB)
+    t_settings = font_mic.render("S - Setari Viteză", True, ALB)
+    t_dificultate = font_mic.render(f"Dificultate: {nume_dificultate}", True, ALB)
 
     r_game_over = t_game_over.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 50))
     r_scor = t_scor.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 20))
-    r_restart = t_restart.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 80))
-    r_record = t_record.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 140))
-
+    r_restart = t_restart.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 60))
+    r_record = t_record.get_rect(center=(WIDTH // 2, HEIGHT // 2 + 100))
+    r_settings = t_settings.get_rect(center=(WIDTH // 2, HEIGHT // 2 - 100))
+    r_dificultate = t_dificultate.get_rect( center=(WIDTH // 2, HEIGHT // 2 + 140))
+   
     ecran.fill(NEGRU)
     ecran.blit(t_game_over, r_game_over)
     ecran.blit(t_scor, r_scor)
     ecran.blit(t_restart, r_restart)
     ecran.blit(t_record,r_record)
+    ecran.blit(t_settings, r_settings)
+    ecran.blit(t_dificultate, r_dificultate)
     pygame.display.update()
 
 def reseteaza_joc():
@@ -86,10 +98,56 @@ def salveaza_high_score(nou_record):
     with open("highscore.txt", "w") as f:
         f.write(str(nou_record))
 
+
+def ecran_settings():
+    global viteza_joc 
+    
+    in_setari = True
+    while in_setari:
+        ecran.fill(NEGRU)
+        font_mare = pygame.font.SysFont("arial", 50, bold=True)
+        font_mic = pygame.font.SysFont("arial", 30)
+
+        t_titlu = font_mare.render("SETARI VITEZA", True, ALB)
+        t_optiuni = [
+            font_mic.render("1. Incepator ", True, VERDE),
+            font_mic.render("2. Mediu ", True, PORTOCALIU ),
+            font_mic.render("3. Avansat ", True, ROSU),
+            font_mic.render("ESC - Inapoi", True, GRI_INCHIS)
+        ]
+
+       
+        ecran.blit(t_titlu, (WIDTH // 2 - 160, 50))
+        
+        for i, optiune in enumerate(t_optiuni):
+            ecran.blit(optiune, (WIDTH // 2 - 150, 150 + i * 60))
+
+        pygame.display.update()
+
+        # Captăm tastele în meniul de setări
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_1:
+                    viteza_joc = 10
+                    in_setari = False # Ieșim din meniu după alegere
+                elif event.key == pygame.K_2:
+                    viteza_joc = 20
+                    in_setari = False
+                elif event.key == pygame.K_3:
+                    viteza_joc = 30
+                    in_setari = False
+                elif event.key == pygame.K_ESCAPE:
+                    in_setari = False
+
+
 pygame.init()
 ecran = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Snake Proiect")
 ceas = pygame.time.Clock()
+viteza_joc = config['snake']['speed'] 
 
 obstacole = config['obstacles']
 reseteaza_joc() 
@@ -140,6 +198,9 @@ while running:
                     if event.key == pygame.K_r:
                         reseteaza_joc() 
                         asteptare = False
+                    if event.key == pygame.K_s:
+                        ecran_settings() 
+                        ecran_final(scor)   
         continue 
     
     sarpe.insert(0, cap_actual)
@@ -170,6 +231,6 @@ while running:
     
     afiseaza_scoruri(scor,high_score)
     pygame.display.update()
-    ceas.tick(config['snake']['speed'])
+    ceas.tick(viteza_joc)
 
 pygame.quit()
